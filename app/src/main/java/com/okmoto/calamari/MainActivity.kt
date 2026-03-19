@@ -31,6 +31,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.okmoto.calamari.calendar.CalendarRepository
+import com.okmoto.calamari.calendar.CreatedEventsVerifierWorker
 import com.okmoto.calamari.core.REQUIRED_PERMISSIONS_FOR_HOME
 import com.okmoto.calamari.core.isGranted
 import com.okmoto.calamari.home.HomeScreen
@@ -49,7 +50,11 @@ import com.okmoto.calamari.permissions.screens.SplashScreen
 import com.okmoto.calamari.ui.theme.CalamariTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import javax.inject.Inject
+import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -152,6 +157,7 @@ class MainActivity : ComponentActivity() {
         mainActivityForegroundStore.setMainActivityResumed(true)
         val allGranted = REQUIRED_PERMISSIONS_FOR_HOME.all { it.isGranted(this) }
         if (allGranted) {
+            scheduleCreatedEventsVerifier()
             val intent = Intent(this, MainBubbleService::class.java)
             ContextCompat.startForegroundService(this, intent)
         } else {
@@ -187,5 +193,19 @@ class MainActivity : ComponentActivity() {
 
     private fun shouldShowCalendarSetup(): Boolean {
         return !calendarSetupAcknowledged && !CalendarRepository.hasWritableCalendar(this)
+    }
+
+    private fun scheduleCreatedEventsVerifier() {
+        val workManager = WorkManager.getInstance(this)
+        val request = PeriodicWorkRequestBuilder<CreatedEventsVerifierWorker>(
+            12,
+            TimeUnit.HOURS,
+        ).build()
+
+        workManager.enqueueUniquePeriodicWork(
+            "calamari_created_events_verifier",
+            ExistingPeriodicWorkPolicy.KEEP,
+            request,
+        )
     }
 }

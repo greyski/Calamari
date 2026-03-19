@@ -70,6 +70,10 @@ dependencies {
     implementation(libs.androidx.savedstate)
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
 
     // Lifecycle & navigation
     implementation(libs.androidx.lifecycle.runtime.compose)
@@ -81,6 +85,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.core.ktx)
     ksp(libs.hilt.android.compiler)
+    ksp(libs.androidx.room.compiler)
 
     // Test
     testImplementation(libs.junit)

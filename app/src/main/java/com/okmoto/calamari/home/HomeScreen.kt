@@ -5,7 +5,7 @@
  * - Rendering user-facing copy based on [ListeningState].
  * - Showing a calendar button that opens a bottom sheet listing events created by Calamari.
  *
- * The events list is backed by the in-memory cache owned by [com.okmoto.calamari.calendar.CalendarRepository].
+ * The events list is backed by the persisted history owned by [com.okmoto.calamari.calendar.CalendarRepository].
  * This file intentionally keeps sheet state local so Home remains a simple coordinator UI.
  */
 package com.okmoto.calamari.home

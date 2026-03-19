@@ -52,7 +52,7 @@ fun EventsSheet(
     ) {
         Text(
             text = "Your events",
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
             modifier = Modifier.padding(start = 8.dp),
         )
 
@@ -70,15 +70,27 @@ fun EventsSheet(
                     val event = created.event
                     val title = event.title?.takeIf { it.isNotBlank() } ?: "Untitled event"
                     val dateLabel = event.startMillis.formatDateLabel()
-                    val subtitle = if (event.allDay) {
+                    val baseSubtitle = if (event.allDay) {
                         "$dateLabel • All day"
                     } else {
                         "$dateLabel • ${event.startMillis.formatTimeLabel()}"
                     }
+                    val isDeleted = !created.existsInSystem
+                    val subtitle = if (isDeleted) {
+                        "$baseSubtitle • Deleted"
+                    } else {
+                        baseSubtitle
+                    }
+                    val subtitleColor = if (isDeleted) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
                     Column(
-                        modifier = Modifier.clickable {
-                            context.openCalendarForCreatedEvent(created)
-                        },
+                        modifier = Modifier.clickable(
+                            enabled = created.existsInSystem,
+                            onClick = { context.openCalendarForCreatedEvent(created) },
+                        ),
                         verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         Text(
@@ -88,7 +100,7 @@ fun EventsSheet(
                         Text(
                             text = subtitle,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = subtitleColor,
                         )
                     }
                 }
@@ -108,6 +120,8 @@ private fun Long.formatTimeLabel(): String {
 }
 
 private fun Context.openCalendarForCreatedEvent(event: CreatedCalamariCalendarEvent) {
+    if (!event.existsInSystem) return
+
     val twentyFourHoursMillis = 24L * 60L * 60L * 1000L
     val eventAgeMillis = System.currentTimeMillis() - event.createdAtMillis
     val shouldOpenByEventId = eventAgeMillis >= twentyFourHoursMillis

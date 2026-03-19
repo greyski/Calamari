@@ -3,8 +3,8 @@
  *
  * Methodology:
  * - Owns inserts into `CalendarContract.Events`.
- * - Maintains an in-memory cache (`createdEvents`) of events created through this repo
- *   so the Home screen can display them without re-querying the system calendar.
+ * - Maintains a persisted history (`createdEvents`) of events created through this repo using
+ *   Room, so the Home screen can display history even after process death.
  */
 package com.okmoto.calamari.calendar
 
@@ -14,15 +14,17 @@ import android.database.Cursor
 import android.provider.CalendarContract
 import android.provider.CalendarContract.Events
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import java.util.TimeZone
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -56,6 +58,8 @@ data class CreatedCalamariCalendarEvent(
     val eventId: Long,
     val event: CalamariCalendarEvent,
     val createdAtMillis: Long = System.currentTimeMillis(),
+    val existsInSystem: Boolean = true,
+    val lastVerifiedAtMillis: Long? = null,
 )
 
 /**
@@ -70,17 +74,39 @@ data class CreatedCalamariCalendarEvent(
 @Singleton
 class CalendarRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    private val createdEventsDao: CreatedCalamariEventsDao,
 ) {
 
-    private val _createdEvents = MutableStateFlow<List<CreatedCalamariCalendarEvent>>(emptyList())
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /**
-     * In-memory cache of events created through this repository (most-recent first).
-     *
-     * Note: this cache is process-lifetime only. If the app process dies, callers should
-     * rehydrate by querying the provider (we can add that later when wiring up UI).
+     * Persisted cache of events created through this repository (most-recent first).
      */
-    val createdEvents: StateFlow<List<CreatedCalamariCalendarEvent>> = _createdEvents.asStateFlow()
+    val createdEvents: StateFlow<List<CreatedCalamariCalendarEvent>> =
+        createdEventsDao
+            .observeCreatedEvents()
+            .map { entities ->
+                entities.map { entity ->
+                    CreatedCalamariCalendarEvent(
+                        eventId = entity.eventId,
+                        createdAtMillis = entity.createdAtMillis,
+                        existsInSystem = entity.existsInSystem,
+                        lastVerifiedAtMillis = entity.lastVerifiedAtMillis,
+                        event = CalamariCalendarEvent(
+                            title = entity.title,
+                            startMillis = entity.startMillis,
+                            endMillis = entity.endMillis,
+                            calendarId = entity.calendarId,
+                            allDay = entity.allDay,
+                        ),
+                    )
+                }
+            }
+            .stateIn(
+                repositoryScope,
+                SharingStarted.WhileSubscribed(5_000),
+                emptyList(),
+            )
 
     companion object {
         /**
@@ -261,14 +287,21 @@ class CalendarRepository @Inject constructor(
         )
         val createdId = insertEvent(event)
         if (createdId != null) {
-            _createdEvents.update { current ->
-                listOf(
-                    CreatedCalamariCalendarEvent(
-                        eventId = createdId,
-                        event = event,
-                    )
-                ) + current
-            }
+            val createdAtMillis = System.currentTimeMillis()
+            createdEventsDao.upsert(
+                CreatedCalamariEventEntity(
+                    eventId = createdId,
+                    calendarId = event.calendarId,
+                    title = event.title,
+                    startMillis = event.startMillis,
+                    endMillis = event.endMillis,
+                    allDay = event.allDay,
+                    createdAtMillis = createdAtMillis,
+                    existsInSystem = true,
+                    lastVerifiedAtMillis = null,
+                ),
+            )
+            createdEventsDao.prune(maxRows = 250)
         }
         createdId
     }

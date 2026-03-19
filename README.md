@@ -11,6 +11,7 @@ Calamari is a voice-driven Android companion that runs an always-on floating “
 - Event deep-link behavior:
   - Events created **within the last 24 hours** open the user’s default calendar view (no deep link).
   - Events created **24+ hours ago** attempt to open the specific event by `eventId`.
+  - Events flagged as **Deleted** (missing from the system calendar) show a deleted indicator and are non-interactive.
 
 ## Screens
 
@@ -31,7 +32,7 @@ There are currently no screenshot assets committed to this repository. Add image
 1. The overlay service runs and listens for voice intents.
 2. Calendar event timing is computed and an event prompt is shown for title capture.
 3. When the user submits, events are inserted into the system calendar provider.
-4. The repository keeps an in-memory cache of events created by Calamari for the Home sheet.
+4. The repository persists a bounded history of Calamari-created events in a local Room database, which powers the Home bottom sheet.
 
 ## Development
 
@@ -43,5 +44,7 @@ Build/test:
 
 ## Notes
 
-The event cache (`CalendarRepository`) is process-lifetime only. If the app process is killed, callers will need to rehydrate the list (not implemented yet).
+Persisted event history is pruned to the most recent `250` Calamari-created rows (drop-oldest).
+
+A background verifier periodically checks stored `eventId`s against `CalendarContract.Events` and flags events that have been deleted from the system calendar. Flagged events show as **Deleted** in the Home bottom sheet and tapping them is disabled.
 

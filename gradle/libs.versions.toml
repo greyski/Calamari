@@ -19,6 +19,9 @@ ksp = "2.2.10-2.0.2"
 robolectric = "4.14.1"
 roborazzi = "1.59.0"
 coreKtxVersion = "1.18.0"
+room = "2.8.4"
+work = "2.11.1"
+hiltWork = "1.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,6 +43,11 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-savedstate = { group = "androidx.savedstate", name = "savedstate", version.ref = "savedstate" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
+androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWork" }
 picovoice-porcupine-android = { group = "ai.picovoice", name = "porcupine-android", version.ref = "picovoicePorcupine" }
 picovoice-rhino-android = { group = "ai.picovoice", name = "rhino-android", version.ref = "picovoiceRhino" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
