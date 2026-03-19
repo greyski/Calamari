@@ -6,10 +6,8 @@ import com.github.takahirom.roborazzi.RoborazziOptions
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.github.takahirom.roborazzi.provideRoborazziContext
 import org.junit.After
-import org.junit.Ignore
 import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 import org.junit.rules.TestName
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -19,15 +17,7 @@ import org.robolectric.annotation.GraphicsMode
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(manifest = Config.NONE, sdk = [35])
-open class BaseSnapshotTest {
-
-    // This is a helper base class for snapshot tests.
-    // Gradle/JUnit may still attempt to run it because it matches `*Test` naming,
-    // but it doesn't declare any @Test methods.
-    // An ignored dummy test avoids `InvalidTestClassError`.
-    @Ignore("Base class for snapshot helpers; subclasses contain the real assertions.")
-    @Test
-    fun baseSnapshotHelper_noop() = Unit
+abstract class BaseSnapshotTest {
 
     companion object {
         private const val SCREENSHOT_DIR = "src/test/screenshots/"
