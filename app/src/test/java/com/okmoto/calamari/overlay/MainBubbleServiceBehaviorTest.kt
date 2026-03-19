@@ -30,7 +30,7 @@ class MainBubbleServiceBehaviorTest {
         val fixture = serviceFixture()
 
         fixture.invokeSetListeningState(ListeningState.AWAITING_EVENT)
-        shadowOf(Looper.getMainLooper()).idleFor(10_100, java.util.concurrent.TimeUnit.MILLISECONDS)
+        shadowOf(Looper.getMainLooper()).idleFor(AWAIT_DELAY + 100, java.util.concurrent.TimeUnit.MILLISECONDS)
 
         assertEquals(ListeningState.AWAKE, fixture.listeningStateStore.state.value)
         assertEquals(1, fixture.audioSessionManager.stopCount)
