@@ -3,6 +3,8 @@ package com.okmoto.calamari.overlay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Whether [com.okmoto.calamari.MainActivity] is in the resumed (foreground) lifecycle state.
@@ -10,13 +12,18 @@ import kotlinx.coroutines.flow.asStateFlow
  * Updated from the activity so the floating bubble can lower opacity when the user is in
  * another app or system UI, without blocking their view as much.
  */
-object MainActivityForegroundRepository {
+interface MainActivityForegroundStore {
+    val mainActivityResumed: StateFlow<Boolean>
+    fun setMainActivityResumed(resumed: Boolean)
+}
 
-    private val _mainActivityResumed = MutableStateFlow(false)
-    val mainActivityResumed: StateFlow<Boolean> = _mainActivityResumed.asStateFlow()
+@Singleton
+class MainActivityForegroundRepository @Inject constructor() : MainActivityForegroundStore {
+    private val mutableMainActivityResumed = MutableStateFlow(false)
+    override val mainActivityResumed: StateFlow<Boolean> = mutableMainActivityResumed.asStateFlow()
 
-    fun setMainActivityResumed(resumed: Boolean) {
-        if (_mainActivityResumed.value == resumed) return
-        _mainActivityResumed.value = resumed
+    override fun setMainActivityResumed(resumed: Boolean) {
+        if (mutableMainActivityResumed.value == resumed) return
+        mutableMainActivityResumed.value = resumed
     }
 }

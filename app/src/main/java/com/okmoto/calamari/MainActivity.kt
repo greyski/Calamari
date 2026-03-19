@@ -21,29 +21,36 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.okmoto.calamari.calendar.CalendarRepository
 import com.okmoto.calamari.core.REQUIRED_PERMISSIONS_FOR_HOME
 import com.okmoto.calamari.core.isGranted
 import com.okmoto.calamari.home.HomeScreen
 import com.okmoto.calamari.navigation.Routes
 import com.okmoto.calamari.navigation.routeForPermission
 import com.okmoto.calamari.overlay.FloatingBubbleService
-import com.okmoto.calamari.overlay.ListeningStateRepository
-import com.okmoto.calamari.overlay.MainActivityForegroundRepository
-import com.okmoto.calamari.calendar.CalendarRepository
+import com.okmoto.calamari.overlay.ListeningStateStore
+import com.okmoto.calamari.overlay.MainActivityForegroundStore
 import com.okmoto.calamari.permissions.PermissionsGateViewModel
-import com.okmoto.calamari.permissions.screens.CalendarSetupScreen
 import com.okmoto.calamari.permissions.screens.CalendarPermissionScreen
+import com.okmoto.calamari.permissions.screens.CalendarSetupScreen
 import com.okmoto.calamari.permissions.screens.MicrophonePermissionScreen
 import com.okmoto.calamari.permissions.screens.NotificationsPermissionScreen
 import com.okmoto.calamari.permissions.screens.OverlayPermissionScreen
 import com.okmoto.calamari.permissions.screens.SplashScreen
 import com.okmoto.calamari.ui.theme.CalamariTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val gateViewModel: PermissionsGateViewModel by viewModels()
     private var calendarSetupAcknowledged: Boolean = false
+    @Inject
+    lateinit var listeningStateStore: ListeningStateStore
+    @Inject
+    lateinit var mainActivityForegroundStore: MainActivityForegroundStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +59,7 @@ class MainActivity : ComponentActivity() {
             CalamariTheme {
                 val navController = rememberNavController()
                 val lifecycleOwner = LocalLifecycleOwner.current
-                val listeningState by ListeningStateRepository.state.collectAsState()
+                val listeningState by listeningStateStore.state.collectAsState()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
                     NavHost(
@@ -125,14 +132,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        // Hot-word + intent detection is now owned by the always-on foreground
-        // overlay service. The activity does not start its own audio session.
     }
 
     override fun onResume() {
         super.onResume()
-        MainActivityForegroundRepository.setMainActivityResumed(true)
+        mainActivityForegroundStore.setMainActivityResumed(true)
         val allGranted = REQUIRED_PERMISSIONS_FOR_HOME.all { it.isGranted(this) }
         if (allGranted) {
             val intent = Intent(this, FloatingBubbleService::class.java)
@@ -143,18 +147,17 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onPause() {
-        MainActivityForegroundRepository.setMainActivityResumed(false)
+        mainActivityForegroundStore.setMainActivityResumed(false)
         super.onPause()
     }
 
     private fun navigateToFirstMissingOrHome(navController: androidx.navigation.NavHostController) {
         val missing = gateViewModel.firstMissingPermission()
-        val targetRoute =
-            when {
-                shouldShowCalendarSetup() -> Routes.CalendarSetup
-                missing != null -> missing.routeForPermission()
-                else -> Routes.Home
-            }
+        val targetRoute = when {
+            shouldShowCalendarSetup() -> Routes.CalendarSetup
+            missing != null -> missing.routeForPermission()
+            else -> Routes.Home
+        }
 
         val currentRoute = navController.currentBackStackEntry?.destination?.route
         if (currentRoute == targetRoute) return

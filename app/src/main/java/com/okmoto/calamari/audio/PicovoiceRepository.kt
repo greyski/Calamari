@@ -1,33 +1,35 @@
 package com.okmoto.calamari.audio
 
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val CALAMARI_HOT_WORD_PATH = "Calamari_en_android_v4_0_0.ppn"
 private const val CALAMARI_CONTEXT_PATH = "Calamari_en_android_v4_0_0.rhn"
 
-/**
- * Singleton that owns the Picovoice audio engine session.
- * Call init(context) from Application.onCreate().
- */
-object PicovoiceRepository {
+interface AudioSessionManager {
+    fun startHotwordAndCommandSession(listener: CalamariAudioListener)
+    fun requestImmediateIntent()
+    fun stopSession()
+}
 
-    private lateinit var appContext: Context
+@Singleton
+class PicovoiceRepository @Inject constructor(
+    @param:ApplicationContext private val appContext: Context,
+) : AudioSessionManager {
     private var engine: CalamariAudioEngine? = null
 
     private val mainListenerScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main.immediate
     )
 
-    fun init(context: Context) {
-        appContext = context.applicationContext
-    }
-
-    fun startHotwordAndCommandSession(listener: CalamariAudioListener) {
-        if (!::appContext.isInitialized || engine != null) return
+    override fun startHotwordAndCommandSession(listener: CalamariAudioListener) {
+        if (engine != null) return
 
         val config = CalamariAudioConfig(
             porcupineKeywordPaths = listOf(CALAMARI_HOT_WORD_PATH),
@@ -59,11 +61,11 @@ object PicovoiceRepository {
         ).also { it.start(CalamariStartMode.HOTWORD_THEN_INTENT) }
     }
 
-    fun requestImmediateIntent() {
+    override fun requestImmediateIntent() {
         engine?.requestImmediateIntent()
     }
 
-    fun stopSession() {
+    override fun stopSession() {
         engine?.stop()
         engine = null
     }

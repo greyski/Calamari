@@ -3,19 +3,27 @@ package com.okmoto.calamari.overlay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Single source of truth for the current floating bubble listening state.
  *
  * Both the overlay service and the UI can observe this.
  */
-object ListeningStateRepository {
-    private val _state = MutableStateFlow(ListeningState.IDLE)
-    val state: StateFlow<ListeningState> = _state.asStateFlow()
+interface ListeningStateStore {
+    val state: StateFlow<ListeningState>
+    fun setState(newState: ListeningState): Boolean
+}
 
-    fun setState(newState: ListeningState): Boolean {
-        if (_state.value == newState) return false
-        _state.value = newState
+@Singleton
+class ListeningStateRepository @Inject constructor() : ListeningStateStore {
+    private val mutableState = MutableStateFlow(ListeningState.IDLE)
+    override val state: StateFlow<ListeningState> = mutableState.asStateFlow()
+
+    override fun setState(newState: ListeningState): Boolean {
+        if (mutableState.value == newState) return false
+        mutableState.value = newState
         return true
     }
 }

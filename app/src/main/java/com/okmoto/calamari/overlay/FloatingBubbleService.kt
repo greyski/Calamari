@@ -14,7 +14,6 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import androidx.annotation.ColorRes
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
@@ -27,22 +26,26 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import dagger.hilt.android.AndroidEntryPoint
+import com.okmoto.calamari.MainActivity
 import com.okmoto.calamari.R
+import com.okmoto.calamari.audio.AudioSessionManager
 import com.okmoto.calamari.audio.CalamariAudioListener
 import com.okmoto.calamari.audio.CalamariIntent
-import com.okmoto.calamari.audio.PicovoiceRepository
 import com.okmoto.calamari.calendar.CalamariCalendarEvent
 import com.okmoto.calamari.calendar.CalendarRepository
 import com.okmoto.calamari.calendar.CalendarUtil
-import com.okmoto.calamari.overlay.BubbleNotificationManager.startInForeground
 import com.okmoto.calamari.overlay.compose.BubbleOverlay
 import com.okmoto.calamari.overlay.compose.EventPromptOverlay
+import com.okmoto.calamari.overlay.compose.OverlayFeedbackStyle
 import com.okmoto.calamari.overlay.compose.PromptUiState
 import com.okmoto.calamari.ui.theme.CalamariTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
 
 
+@AndroidEntryPoint
 class FloatingBubbleService : Service(), SimpleSpeechListener {
 
     private var windowManager: WindowManager? = null
@@ -55,7 +58,14 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
 
     private val promptParams = defaultLayoutParams()
 
-    private var calendarRepository: CalendarRepository? = null
+    @Inject lateinit var calendarRepository: CalendarRepository
+    @Inject lateinit var audioSessionManager: AudioSessionManager
+    @Inject lateinit var listeningStateStore: ListeningStateStore
+    @Inject lateinit var mainActivityForegroundStore: MainActivityForegroundStore
+    @Inject lateinit var motionWakeController: MotionWakeController
+    @Inject lateinit var bubbleFeedbackPlayer: BubbleFeedbackPlayer
+    @Inject lateinit var bubbleNotificationController: BubbleNotificationController
+    @Inject lateinit var bubbleOverlayFeedbackController: BubbleOverlayFeedbackController
 
     private var pendingEvent: CalamariCalendarEvent? = null
 
@@ -63,7 +73,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
     private val calamariAudioListener: CalamariAudioListener by lazy {
         object : CalamariAudioListener {
             override fun onWakeWordDetected() {
-                BubbleFeedbackManager.playWakeFeedback(this@FloatingBubbleService)
+                bubbleFeedbackPlayer.playWakeFeedback(this@FloatingBubbleService)
                 setListeningState(ListeningState.AWAITING_EVENT)
             }
 
@@ -72,7 +82,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
             }
 
             override fun onIntentMiss() {
-                PicovoiceRepository.stopSession()
+                audioSessionManager.stopSession()
                 setListeningState(ListeningState.AWAKE)
             }
 
@@ -86,9 +96,6 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
     // Idle timers never run at the same time, so we can reuse a single timer.
     private val idleHandler = IdleHandler()
 
-    /** If still AWAITING_EVENT after this, we revert to AWAKE and restart the session. */
-    private val awaitingEventTimeoutMs = 10_000L
-
     private val promptUiStateFlow = MutableStateFlow<PromptUiState?>(null)
 
     private var recognizer: SpeechRecognizer? = null
@@ -99,8 +106,17 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
         super.onCreate()
         overlayOwners.onCreate()
         overlayOwners.onResume()
-        startInForeground(this, ListeningStateRepository.state.value.notificationText)
+        bubbleNotificationController.startInForeground(this, listeningStateStore.state.value.notificationText)
         addBubble()
+        windowManager?.let { wm ->
+            bubbleOverlayFeedbackController.setup(
+                context = this,
+                windowManager = wm,
+                attachOverlayOwners = { view -> overlayOwners.attachTo(view) },
+                bubbleParams = bubbleParams,
+                bubbleViewProvider = { bubbleView },
+            )
+        }
         startAudioPipeline()
         recognizer = SpeechRecognizer.createSpeechRecognizer(this).also { recognizer ->
             recognizer.setRecognitionListener(this)
@@ -146,13 +162,14 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
     override fun onDestroy() {
         super.onDestroy()
         removeBubble()
-        PicovoiceRepository.stopSession()
-        MotionWakeDetector.stop()
+        bubbleOverlayFeedbackController.teardown()
+        audioSessionManager.stopSession()
+        motionWakeController.stop()
         overlayOwners.onDestroy()
         recognizer?.cancel()
         recognizer?.destroy()
         recognizer = null
-        ListeningStateRepository.setState(ListeningState.IDLE)
+        listeningStateStore.setState(ListeningState.IDLE)
     }
 
     private fun restartSpeechRecognizer() {
@@ -177,8 +194,8 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             setOnTouchListener(BubbleTouchListener())
             setContent {
-                val state by ListeningStateRepository.state.collectAsState()
-                val mainActivityResumed by MainActivityForegroundRepository.mainActivityResumed.collectAsState()
+                val state by listeningStateStore.state.collectAsState()
+                val mainActivityResumed by mainActivityForegroundStore.mainActivityResumed.collectAsState()
                 val monthAndDate = CalendarUtil.getMonthAndDateToday()
                 CalamariTheme {
                     BubbleOverlay(
@@ -194,7 +211,6 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
     }
 
     private fun startAudioPipeline() {
-        calendarRepository = CalendarRepository(this)
         setListeningState(ListeningState.AWAKE)
     }
 
@@ -219,7 +235,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
 
         // Release the mic from Picovoice so SpeechRecognizer can use it when the user adds an
         // event name
-        PicovoiceRepository.stopSession()
+        audioSessionManager.stopSession()
 
         val dayLabel = CalendarUtil.formatDayLabel(startMillis)
         val timeLabel = if (allDay) "" else CalendarUtil.formatTimeLabel(startMillis)
@@ -295,7 +311,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
         promptUiStateFlow.value = null
 
         if (restartHotword) {
-            PicovoiceRepository.startHotwordAndCommandSession(calamariAudioListener)
+            audioSessionManager.startHotwordAndCommandSession(calamariAudioListener)
         }
     }
 
@@ -330,7 +346,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
             )
         }
 
-        BubbleFeedbackManager.playTitleCapturedFeedback(this)
+        bubbleFeedbackPlayer.playTitleCapturedFeedback(this)
         setListeningState(ListeningState.IDLE_SEND)
         scheduleAutoSubmit()
     }
@@ -338,21 +354,23 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
     private fun scheduleAutoSubmit() {
         schedulePromptIdle(PromptUiState.TimerAction.SEND) {
             pendingEvent?.let { event ->
-                calendarRepository?.submitEvent(
+                calendarRepository.submitEvent(
                     event = event,
                     onSuccess = {
-                        this@FloatingBubbleService.makeToast(
-                            "Event \"${event.title}\" created."
+                        bubbleOverlayFeedbackController.show(
+                            message = "Event \"${event.title}\" created!",
+                            style = OverlayFeedbackStyle.SUCCESS,
                         )
                         hideEventPrompt(true)
                         setListeningState(ListeningState.AWAKE)
                     },
                     onError = {
-                        this@FloatingBubbleService.makeToast(
-                            "Failed to send, do you have a calendar setup?"
+                        bubbleOverlayFeedbackController.show(
+                            message = "We ran into an issue submitting your event.",
+                            style = OverlayFeedbackStyle.ERROR,
                         )
                         hideEventPrompt(true)
-                        setListeningState(ListeningState.AWAKE)
+                        setListeningState(ListeningState.ERROR)
                     }
                 )
             }
@@ -360,20 +378,20 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
     }
 
     private fun setListeningState(newState: ListeningState) {
-        if (ListeningStateRepository.setState(newState).not()) return
+        if (listeningStateStore.setState(newState).not()) return
         // Update foreground notification text for clarity.
-        BubbleNotificationManager.updateNotification(this, newState.notificationText)
+        bubbleNotificationController.updateNotification(this, newState.notificationText)
         when (newState) {
             ListeningState.AWAKE -> {
-                PicovoiceRepository.startHotwordAndCommandSession(calamariAudioListener)
+                audioSessionManager.startHotwordAndCommandSession(calamariAudioListener)
                 markListeningActivity()
-                MotionWakeDetector.stop()
+                motionWakeController.stop()
             }
 
             ListeningState.AWAITING_EVENT -> {
-                idleHandler.scheduleIdle(awaitingEventTimeoutMs) {
-                    if (ListeningStateRepository.state.value == ListeningState.AWAITING_EVENT) {
-                        PicovoiceRepository.stopSession()
+                idleHandler.scheduleIdle(AWAIT_DELAY) {
+                    if (listeningStateStore.state.value == ListeningState.AWAITING_EVENT) {
+                        audioSessionManager.stopSession()
                         setListeningState(ListeningState.AWAKE)
                     }
                 }
@@ -381,8 +399,8 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
 
             ListeningState.IDLE -> {
                 idleHandler.cancelIdle()
-                MotionWakeDetector.start(this) {
-                    if (ListeningStateRepository.state.value == ListeningState.IDLE) {
+                motionWakeController.start(this) {
+                    if (listeningStateStore.state.value == ListeningState.IDLE) {
                         setListeningState(ListeningState.AWAKE)
                     }
                 }
@@ -399,10 +417,10 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
     }
 
     private fun markListeningActivity() {
-        if (ListeningStateRepository.state.value != ListeningState.AWAKE) return
+        if (listeningStateStore.state.value != ListeningState.AWAKE) return
         idleHandler.scheduleIdle {
-            if (ListeningStateRepository.state.value == ListeningState.AWAKE) {
-                PicovoiceRepository.stopSession()
+            if (listeningStateStore.state.value == ListeningState.AWAKE) {
+                audioSessionManager.stopSession()
                 setListeningState(ListeningState.IDLE)
             }
         }
@@ -410,7 +428,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
 
     private fun schedulePromptIdle(
         action: PromptUiState.TimerAction,
-        delayMs: Long = 10_000L,
+        delayMs: Long = AWAIT_DELAY,
         block: () -> Unit,
     ) {
         val startedAt = SystemClock.uptimeMillis()
@@ -484,6 +502,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
     }
 
     private fun removeBubble() {
+        bubbleOverlayFeedbackController.hide()
         hideEventPrompt(false)
         val view = bubbleView
         if (view != null) {
@@ -493,18 +512,30 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
     }
 
     /**
-     * Invoked when the user double-taps the bubble while the service is awake.
-     * This lets them skip saying "Calamari" and jump straight into the
-     * AWAITING_EVENT state, mirroring the wake-word behavior.
+     * Invoked when the user double-taps the bubble.
+     * - In [ListeningState.AWAKE], request immediate intent processing.
+     * - In [ListeningState.ERROR], bring the user to [MainActivity] and recover to AWAKE.
      */
     private fun onBubbleDoubleTap() {
-        if (ListeningStateRepository.state.value != ListeningState.AWAKE) return
-        PicovoiceRepository.requestImmediateIntent()
-        idleHandler.scheduleIdle {
-            if (ListeningStateRepository.state.value == ListeningState.AWAKE) {
-                PicovoiceRepository.stopSession()
-                setListeningState(ListeningState.IDLE)
+        when (listeningStateStore.state.value) {
+            ListeningState.AWAKE -> {
+                audioSessionManager.requestImmediateIntent()
+                idleHandler.scheduleIdle {
+                    if (listeningStateStore.state.value == ListeningState.AWAKE) {
+                        audioSessionManager.stopSession()
+                        setListeningState(ListeningState.IDLE)
+                    }
+                }
             }
+            ListeningState.ERROR -> {
+                startActivity(
+                    Intent(this, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    },
+                )
+                setListeningState(ListeningState.AWAKE)
+            }
+            else -> Unit
         }
     }
 
@@ -528,7 +559,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
 
             return when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    if (ListeningStateRepository.state.value == ListeningState.IDLE) {
+                    if (listeningStateStore.state.value == ListeningState.IDLE) {
                         // User is interacting with the bubble; wake the listener.
                         setListeningState(ListeningState.AWAKE)
                     }
@@ -588,6 +619,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
                                         prompt,
                                     )
                                 }
+                                bubbleOverlayFeedbackController.onAnchorMoved()
                             }
                         }
                         true
@@ -604,10 +636,11 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
                     val distanceSq = dx * dx + dy * dy
                     val isTap = distanceSq <= tapSlopPx * tapSlopPx
 
-                    if (isTap && ListeningStateRepository.state.value == ListeningState.AWAKE) {
+                    val currentState = listeningStateStore.state.value
+                    if (isTap && (currentState == ListeningState.AWAKE || currentState == ListeningState.ERROR)) {
                         val now = SystemClock.uptimeMillis()
                         if (now - lastTapTimeMs <= doubleTapTimeoutMs) {
-                            // Detected a double-tap while awake.
+                            // Detected a double-tap while active/error.
                             onBubbleDoubleTap()
                             lastTapTimeMs = 0L
                         } else {

@@ -11,6 +11,8 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.okmoto.calamari.R
 import com.okmoto.calamari.MainActivity
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Helper responsible for creating and updating the foreground notification used
@@ -19,16 +21,21 @@ import com.okmoto.calamari.MainActivity
  * This object encapsulates all knowledge of channels, IDs and text mapping so
  * that the service can focus purely on behavior and state transitions.
  */
-object BubbleNotificationManager {
+interface BubbleNotificationController {
+    fun startInForeground(service: Service, text: String)
+    fun updateNotification(context: Context, text: String)
+}
 
-    private const val CHANNEL_ID = "calamari_bubble_channel"
-    private const val CHANNEL_NAME = "Calamari Listening"
-    private const val NOTIFICATION_ID = 1
+@Singleton
+class BubbleNotificationManager @Inject constructor() : BubbleNotificationController {
+    private val channelId = "calamari_bubble_channel"
+    private val channelName = "Calamari Listening"
+    private val notificationId = 1
 
-    fun startInForeground(service: Service, text: String) {
+    override fun startInForeground(service: Service, text: String) {
         ensureChannel(service)
         val notification = buildNotification(service, text)
-        service.startForeground(NOTIFICATION_ID, notification)
+        service.startForeground(notificationId, notification)
     }
 
     /**
@@ -38,12 +45,12 @@ object BubbleNotificationManager {
     private fun ensureChannel(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val existing = manager.getNotificationChannel(CHANNEL_ID)
+        val existing = manager.getNotificationChannel(channelId)
         if (existing != null) return
 
         val channel = NotificationChannel(
-            CHANNEL_ID,
-            CHANNEL_NAME,
+            channelId,
+            channelName,
             NotificationManager.IMPORTANCE_LOW,
         )
         manager.createNotificationChannel(channel)
@@ -65,7 +72,7 @@ object BubbleNotificationManager {
                 (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0),
         )
 
-        return NotificationCompat.Builder(context, CHANNEL_ID)
+        return NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(text)
@@ -78,10 +85,10 @@ object BubbleNotificationManager {
      * Updates the existing foreground notification to reflect a new
      * [ListeningState].
      */
-    fun updateNotification(context: Context, text: String) {
+    override fun updateNotification(context: Context, text: String) {
         ensureChannel(context)
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(NOTIFICATION_ID, buildNotification(context, text))
+        manager.notify(notificationId, buildNotification(context, text))
     }
 }
 

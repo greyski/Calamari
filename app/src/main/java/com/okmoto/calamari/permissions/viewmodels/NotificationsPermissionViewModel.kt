@@ -1,11 +1,11 @@
 package com.okmoto.calamari.permissions.viewmodels
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class NotificationsPermissionViewModel(
-    application: Application,
-) : AndroidViewModel(application) {
+@HiltViewModel
+class NotificationsPermissionViewModel @Inject constructor() : ViewModel() {
     val title = "Enable notifications"
     val description =
         "Calamari uses notifications so the floating bubble can run reliably in the background " +

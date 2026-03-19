@@ -6,7 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.okmoto.calamari.permissions.viewmodels.NotificationsPermissionViewModel
 import com.okmoto.calamari.ui.theme.CalamariTheme
 
@@ -14,7 +14,7 @@ import com.okmoto.calamari.ui.theme.CalamariTheme
 fun NotificationsPermissionScreen(
     onPermissionSatisfied: () -> Unit,
 ) {
-    val vm: NotificationsPermissionViewModel = viewModel()
+    val vm: NotificationsPermissionViewModel = hiltViewModel()
 
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
         onPermissionSatisfied()

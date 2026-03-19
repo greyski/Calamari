@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.provider.CalendarContract
 import android.provider.CalendarContract.Events
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -15,6 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.TimeZone
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Immutable value object describing a single calendar event in the user's calendar.
@@ -55,8 +58,9 @@ data class CreatedCalamariCalendarEvent(
  * - Inserting events into `CalendarContract.Events`.
  * - Providing small convenience helpers around these operations.
  */
-class CalendarRepository(
-    private val context: Context,
+@Singleton
+class CalendarRepository @Inject constructor(
+    @param:ApplicationContext private val context: Context,
 ) {
 
     private val _createdEvents = MutableStateFlow<List<CreatedCalamariCalendarEvent>>(emptyList())

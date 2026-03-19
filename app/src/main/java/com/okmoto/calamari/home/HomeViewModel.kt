@@ -1,9 +1,8 @@
 package com.okmoto.calamari.home
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class HomeViewModel(
-    application: Application,
-) : AndroidViewModel(application)
-
+@HiltViewModel
+class HomeViewModel @Inject constructor() : ViewModel()

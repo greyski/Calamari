@@ -6,6 +6,8 @@ import android.media.ToneGenerator
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Central place for sound and haptic feedback used by the floating bubble.
@@ -13,13 +15,18 @@ import android.os.Vibrator
  * This keeps [FloatingBubbleService] ignorant of the underlying Android
  * audio/vibration APIs and makes it easy to tweak the UX in one location.
  */
-object BubbleFeedbackManager {
+interface BubbleFeedbackPlayer {
+    fun playWakeFeedback(context: Context)
+    fun playTitleCapturedFeedback(context: Context)
+}
 
+@Singleton
+class BubbleFeedbackManager @Inject constructor() : BubbleFeedbackPlayer {
     /**
      * Feedback used when the hot word has been detected and we transition
      * into [ListeningState.AWAITING_EVENT].
      */
-    fun playWakeFeedback(context: Context) {
+    override fun playWakeFeedback(context: Context) {
         playHaptic(context)
     }
 
@@ -27,7 +34,7 @@ object BubbleFeedbackManager {
      * Feedback used when we have successfully captured an event title and
      * transition into [ListeningState.IDLE_SEND] (awaiting send).
      */
-    fun playTitleCapturedFeedback(context: Context) {
+    override fun playTitleCapturedFeedback(context: Context) {
         playHaptic(context)
     }
 

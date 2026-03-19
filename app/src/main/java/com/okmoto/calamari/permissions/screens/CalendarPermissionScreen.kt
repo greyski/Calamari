@@ -5,7 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.okmoto.calamari.permissions.viewmodels.CalendarPermissionViewModel
 import com.okmoto.calamari.ui.theme.CalamariTheme
 
@@ -13,7 +13,7 @@ import com.okmoto.calamari.ui.theme.CalamariTheme
 fun CalendarPermissionScreen(
     onPermissionSatisfied: () -> Unit,
 ) {
-    val vm: CalendarPermissionViewModel = viewModel()
+    val vm: CalendarPermissionViewModel = hiltViewModel()
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),

@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.okmoto.calamari.permissions.viewmodels.OverlayPermissionViewModel
 import com.okmoto.calamari.ui.theme.CalamariTheme
 
@@ -16,7 +16,7 @@ fun OverlayPermissionScreen(
     onPermissionSatisfied: () -> Unit,
 ) {
     val context = LocalContext.current
-    val vm: OverlayPermissionViewModel = viewModel()
+    val vm: OverlayPermissionViewModel = hiltViewModel()
 
     DisposableEffect(Unit) {
         if (Settings.canDrawOverlays(context)) {

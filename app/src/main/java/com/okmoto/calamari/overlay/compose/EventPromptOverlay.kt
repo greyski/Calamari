@@ -178,15 +178,17 @@ private fun Arrow(modifier: Modifier = Modifier) {
 
 @Preview
 @Composable
-fun EventPromptOverlayPreview() {
+fun EventPromptOverlayPreview(
+    state: PromptUiState = PromptUiState(
+        dayLabel = "Friday February 14th",
+        timeLabel = "12:30pm",
+        arrowPosition = PromptUiState.ArrowPosition.BELOW_CONTENT,
+        titleMode = PromptUiState.TitleMode.AddEventName
+    )
+) {
     CalamariTheme {
         EventPromptOverlay(
-            state = PromptUiState(
-                dayLabel = "Friday February 14th",
-                timeLabel = "12:30pm",
-                arrowPosition = PromptUiState.ArrowPosition.BELOW_CONTENT,
-                titleMode = PromptUiState.TitleMode.AddEventName
-            )
+            state = state
         )
     }
 }

@@ -1,11 +1,11 @@
 package com.okmoto.calamari.permissions.viewmodels
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class MicrophonePermissionViewModel(
-    application: Application,
-) : AndroidViewModel(application) {
+@HiltViewModel
+class MicrophonePermissionViewModel @Inject constructor() : ViewModel() {
     val title = "Allow microphone access"
     val description =
         "Calamari needs microphone access to listen for the \"Calamari\" hot word and process " +

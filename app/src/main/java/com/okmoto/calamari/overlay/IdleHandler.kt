@@ -3,7 +3,7 @@ package com.okmoto.calamari.overlay
 import android.os.Handler
 import android.os.Looper
 
-private const val AWAIT_DELAY = 10_000L
+const val AWAIT_DELAY = 5_000L
 
 /**
  * Convenience wrapper to consolidate both the Handler and Runnable APIs used for idle timers.

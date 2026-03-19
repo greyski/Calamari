@@ -165,7 +165,6 @@ class CalamariAudioEngine(
                     continue
                 }
             }
-            Log.d("CalamariAudioEngine", "process $frameBuffer $read $frameLength")
             val isFinalized = rhinoLocal.process(frameBuffer)
             if (isFinalized) {
                 val inference = rhinoLocal.inference

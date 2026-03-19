@@ -7,6 +7,8 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import kotlin.math.abs
 import kotlin.math.sqrt
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Small helper responsible for listening to accelerometer changes and invoking
@@ -15,8 +17,13 @@ import kotlin.math.sqrt
  * Used by [FloatingBubbleService] to move from IDLE → AWAKE without keeping
  * Picovoice running all the time.
  */
-object MotionWakeDetector {
+interface MotionWakeController {
+    fun start(context: Context, onMotion: () -> Unit)
+    fun stop()
+}
 
+@Singleton
+class MotionWakeDetector @Inject constructor() : MotionWakeController {
     private var sensorManager: SensorManager? = null
     private var accelerometer: Sensor? = null
     private var listenerRegistered: Boolean = false
@@ -50,7 +57,7 @@ object MotionWakeDetector {
      * Begins listening for motion if not already registered. The [onMotion]
      * callback will be invoked the first time significant motion is detected.
      */
-    fun start(context: Context, onMotion: () -> Unit) {
+    override fun start(context: Context, onMotion: () -> Unit) {
         if (listenerRegistered) return
         val mgr = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager ?: return
         val accel = mgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) ?: return
@@ -73,7 +80,7 @@ object MotionWakeDetector {
     /**
      * Stops listening for motion if currently registered.
      */
-    fun stop() {
+    override fun stop() {
         if (!listenerRegistered) return
         sensorManager?.unregisterListener(sensorListener)
         listenerRegistered = false

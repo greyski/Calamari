@@ -16,12 +16,6 @@ enum class CalamariPermission(val androidPermission: String?) {
     OVERLAY(null),
 }
 
-fun CalamariPermission.requiresRuntimeRequest(): Boolean =
-    androidPermission != null
-
-fun CalamariPermission.requiresSpecialFlow(): Boolean =
-    this == CalamariPermission.OVERLAY
-
 fun CalamariPermission.isRequiredOnThisDevice(): Boolean {
     return when (this) {
         CalamariPermission.POST_NOTIFICATIONS -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
