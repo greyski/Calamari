@@ -16,7 +16,7 @@ import javax.inject.Singleton
 
 /**
  * Helper responsible for creating and updating the foreground notification used
- * by [FloatingBubbleService] while it is running as a foreground service.
+ * by [MainBubbleService] while it is running as a foreground service.
  *
  * This object encapsulates all knowledge of channels, IDs and text mapping so
  * that the service can focus purely on behavior and state transitions.

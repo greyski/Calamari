@@ -1,6 +1,8 @@
 package com.okmoto.calamari.overlay
 
+import android.content.Context
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -14,7 +16,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
  * ComposeView overlays attached via WindowManager don't have an Activity view tree,
  * so we provide minimal owners for Compose's lifecycle-aware recomposer.
  */
-internal class OverlayViewTreeOwners : LifecycleOwner, SavedStateRegistryOwner {
+class OverlayViewTreeOwners : LifecycleOwner, SavedStateRegistryOwner {
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val savedStateController = SavedStateRegistryController.create(this)
 
@@ -38,8 +40,11 @@ internal class OverlayViewTreeOwners : LifecycleOwner, SavedStateRegistryOwner {
         lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
     }
 
-    fun attachTo(view: ComposeView) {
-        view.setViewTreeLifecycleOwner(this)
-        view.setViewTreeSavedStateRegistryOwner(this)
+    fun createComposeView(context: Context): ComposeView {
+        return ComposeView(context).also { view ->
+            view.setViewTreeLifecycleOwner(this)
+            view.setViewTreeSavedStateRegistryOwner(this)
+            view.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        }
     }
 }

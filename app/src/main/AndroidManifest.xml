@@ -41,7 +41,7 @@
         </activity>
 
         <service
-            android:name=".overlay.FloatingBubbleService"
+            android:name=".overlay.MainBubbleService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="microphone">

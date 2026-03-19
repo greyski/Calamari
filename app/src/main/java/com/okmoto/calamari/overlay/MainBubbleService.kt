@@ -9,7 +9,6 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -18,17 +17,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.SavedStateRegistryController
-import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import dagger.hilt.android.AndroidEntryPoint
 import com.okmoto.calamari.MainActivity
-import com.okmoto.calamari.R
 import com.okmoto.calamari.audio.AudioSessionManager
 import com.okmoto.calamari.audio.CalamariAudioListener
 import com.okmoto.calamari.audio.CalamariIntent
@@ -40,13 +29,13 @@ import com.okmoto.calamari.overlay.compose.EventPromptOverlay
 import com.okmoto.calamari.overlay.compose.OverlayFeedbackStyle
 import com.okmoto.calamari.overlay.compose.PromptUiState
 import com.okmoto.calamari.ui.theme.CalamariTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
-class FloatingBubbleService : Service(), SimpleSpeechListener {
+class MainBubbleService : Service(), SimpleSpeechListener {
 
     private var windowManager: WindowManager? = null
     private var bubbleView: ComposeView? = null
@@ -73,7 +62,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
     private val calamariAudioListener: CalamariAudioListener by lazy {
         object : CalamariAudioListener {
             override fun onWakeWordDetected() {
-                bubbleFeedbackPlayer.playWakeFeedback(this@FloatingBubbleService)
+                bubbleFeedbackPlayer.playWakeFeedback(this@MainBubbleService)
                 setListeningState(ListeningState.AWAITING_EVENT)
             }
 
@@ -112,9 +101,6 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
             bubbleOverlayFeedbackController.setup(
                 context = this,
                 windowManager = wm,
-                attachOverlayOwners = { view -> overlayOwners.attachTo(view) },
-                bubbleParams = bubbleParams,
-                bubbleViewProvider = { bubbleView },
             )
         }
         startAudioPipeline()
@@ -124,28 +110,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
     }
 
     override fun onError(error: Int) {
-        Log.e("onError", "$error")
         restartSpeechRecognizer()
-    }
-
-    override fun onReadyForSpeech(params: Bundle?) {
-        Log.e("onReadyForSpeech", "onReadyForSpeech")
-    }
-
-    override fun onBeginningOfSpeech() {
-        Log.e("onBeginningOfSpeech", "onBeginningOfSpeech")
-    }
-
-    override fun onEndOfSpeech() {
-        Log.e("onEndOfSpeech", "onEndOfSpeech")
-    }
-
-    override fun onPartialResults(partialResults: Bundle) {
-        val matches: ArrayList<String?>? =
-            partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-        if (!matches.isNullOrEmpty()) {
-            Log.e("onPartialResults", matches.toString())
-        }
     }
 
     override fun onResults(results: Bundle) {
@@ -154,7 +119,6 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
         )
         matches?.firstOrNull()?.takeIf { it.isNotBlank() }?.let { raw ->
             val title = raw.replaceFirstChar { it.uppercase() }
-            Log.e("onResults", title)
             onTitleCaptured(title)
         }
     }
@@ -189,9 +153,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
 
     private fun addBubble() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        bubbleView = ComposeView(this).apply {
-            overlayOwners.attachTo(this)
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        bubbleView = overlayOwners.createComposeView(this).apply {
             setOnTouchListener(BubbleTouchListener())
             setContent {
                 val state by listeningStateStore.state.collectAsState()
@@ -247,9 +209,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
             titleMode = PromptUiState.TitleMode.AddEventName,
         )
 
-        promptView = ComposeView(this).apply {
-            overlayOwners.attachTo(this)
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        promptView = overlayOwners.createComposeView(this).apply {
             visibility = View.INVISIBLE
             setContent {
                 val state by promptUiStateFlow.collectAsState()
@@ -360,6 +320,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
                         bubbleOverlayFeedbackController.show(
                             message = "Event \"${event.title}\" created!",
                             style = OverlayFeedbackStyle.SUCCESS,
+                            owners = overlayOwners,
                         )
                         hideEventPrompt(true)
                         setListeningState(ListeningState.AWAKE)
@@ -368,6 +329,7 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
                         bubbleOverlayFeedbackController.show(
                             message = "We ran into an issue submitting your event.",
                             style = OverlayFeedbackStyle.ERROR,
+                            owners = overlayOwners,
                         )
                         hideEventPrompt(true)
                         setListeningState(ListeningState.ERROR)
@@ -619,7 +581,6 @@ class FloatingBubbleService : Service(), SimpleSpeechListener {
                                         prompt,
                                     )
                                 }
-                                bubbleOverlayFeedbackController.onAnchorMoved()
                             }
                         }
                         true

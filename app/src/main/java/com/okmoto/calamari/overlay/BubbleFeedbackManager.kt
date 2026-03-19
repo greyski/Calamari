@@ -1,8 +1,6 @@
 package com.okmoto.calamari.overlay
 
 import android.content.Context
-import android.media.AudioManager
-import android.media.ToneGenerator
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -12,7 +10,7 @@ import javax.inject.Singleton
 /**
  * Central place for sound and haptic feedback used by the floating bubble.
  *
- * This keeps [FloatingBubbleService] ignorant of the underlying Android
+ * This keeps [MainBubbleService] ignorant of the underlying Android
  * audio/vibration APIs and makes it easy to tweak the UX in one location.
  */
 interface BubbleFeedbackPlayer {

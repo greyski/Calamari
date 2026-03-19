@@ -12,7 +12,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE, sdk = [35])
-class FloatingBubbleServiceBehaviorTest {
+class MainBubbleServiceBehaviorTest {
 
     @Test
     fun setListeningState_awake_startsAudioAndStopsMotion() {
@@ -51,7 +51,7 @@ class FloatingBubbleServiceBehaviorTest {
     }
 
     private fun serviceFixture(): ServiceFixture {
-        val service = FloatingBubbleService()
+        val service = MainBubbleService()
         val fixture = ServiceFixture(
             service = service,
             listeningStateStore = FakeListeningStateStore(),
@@ -73,7 +73,7 @@ class FloatingBubbleServiceBehaviorTest {
     }
 
     private data class ServiceFixture(
-        val service: FloatingBubbleService,
+        val service: MainBubbleService,
         val listeningStateStore: FakeListeningStateStore,
         val audioSessionManager: FakeAudioSessionManager,
         val motionWakeController: FakeMotionWakeController,

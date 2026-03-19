@@ -47,6 +47,7 @@ data class CalamariCalendarEvent(
 data class CreatedCalamariCalendarEvent(
     val eventId: Long,
     val event: CalamariCalendarEvent,
+    val createdAtMillis: Long = System.currentTimeMillis(),
 )
 
 /**

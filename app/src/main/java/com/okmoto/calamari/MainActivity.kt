@@ -27,7 +27,7 @@ import com.okmoto.calamari.core.isGranted
 import com.okmoto.calamari.home.HomeScreen
 import com.okmoto.calamari.navigation.Routes
 import com.okmoto.calamari.navigation.routeForPermission
-import com.okmoto.calamari.overlay.FloatingBubbleService
+import com.okmoto.calamari.overlay.MainBubbleService
 import com.okmoto.calamari.overlay.ListeningStateStore
 import com.okmoto.calamari.overlay.MainActivityForegroundStore
 import com.okmoto.calamari.permissions.PermissionsGateViewModel
@@ -51,6 +51,8 @@ class MainActivity : ComponentActivity() {
     lateinit var listeningStateStore: ListeningStateStore
     @Inject
     lateinit var mainActivityForegroundStore: MainActivityForegroundStore
+    @Inject
+    lateinit var calendarRepository: CalendarRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +62,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val lifecycleOwner = LocalLifecycleOwner.current
                 val listeningState by listeningStateStore.state.collectAsState()
+                val createdEvents by calendarRepository.createdEvents.collectAsState()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
                     NavHost(
@@ -115,6 +118,7 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.Home) {
                             HomeScreen(
                                 listeningState = listeningState,
+                                createdEvents = createdEvents,
                             )
                         }
                     }
@@ -139,10 +143,10 @@ class MainActivity : ComponentActivity() {
         mainActivityForegroundStore.setMainActivityResumed(true)
         val allGranted = REQUIRED_PERMISSIONS_FOR_HOME.all { it.isGranted(this) }
         if (allGranted) {
-            val intent = Intent(this, FloatingBubbleService::class.java)
+            val intent = Intent(this, MainBubbleService::class.java)
             ContextCompat.startForegroundService(this, intent)
         } else {
-            stopService(Intent(this, FloatingBubbleService::class.java))
+            stopService(Intent(this, MainBubbleService::class.java))
         }
     }
 

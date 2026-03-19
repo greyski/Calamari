@@ -14,7 +14,7 @@ import javax.inject.Singleton
  * Small helper responsible for listening to accelerometer changes and invoking
  * a callback when the device has clearly moved.
  *
- * Used by [FloatingBubbleService] to move from IDLE → AWAKE without keeping
+ * Used by [MainBubbleService] to move from IDLE → AWAKE without keeping
  * Picovoice running all the time.
  */
 interface MotionWakeController {

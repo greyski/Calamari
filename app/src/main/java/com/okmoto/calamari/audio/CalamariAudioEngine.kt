@@ -8,7 +8,6 @@ import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.okmoto.calamari.BuildConfig
 import kotlinx.coroutines.CoroutineScope
