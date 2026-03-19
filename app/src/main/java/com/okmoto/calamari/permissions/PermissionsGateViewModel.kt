@@ -1,3 +1,11 @@
+/**
+ * Permission gate logic for Calamari onboarding/navigation.
+ *
+ * Methodology:
+ * - Centralizes “which permissions are required for Home” by iterating over
+ *   [com.okmoto.calamari.core.REQUIRED_PERMISSIONS_FOR_HOME].
+ * - Exposes the first missing permission so `MainActivity` can route deterministically.
+ */
 package com.okmoto.calamari.permissions
 
 import android.content.Context

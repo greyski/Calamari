@@ -1,3 +1,10 @@
+/**
+ * Shared scaffold used by permission request screens.
+ *
+ * Methodology:
+ * - Standardizes layout (title, description, primary button, optional secondary button).
+ * - Keeps screens focused on permission mechanics while the scaffold stays purely UI.
+ */
 package com.okmoto.calamari.permissions.screens
 
 import androidx.compose.foundation.layout.Arrangement

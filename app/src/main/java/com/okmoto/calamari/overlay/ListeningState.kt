@@ -1,3 +1,10 @@
+/**
+ * Listening state model for the overlay bubble.
+ *
+ * Methodology:
+ * - Represents the overlay's high-level mode (idle/awake/prompt/etc.).
+ * - Provides user-facing copy for each state so notification/UI can stay consistent.
+ */
 package com.okmoto.calamari.overlay
 
 import androidx.annotation.ColorRes

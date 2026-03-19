@@ -1,3 +1,11 @@
+/**
+ * Lifecycle/saved-state owners for Compose views mounted on top of other apps.
+ *
+ * Methodology:
+ * - WindowManager-attached `ComposeView`s do not naturally inherit an Activity view tree.
+ * - Provides minimal `LifecycleOwner`/`SavedStateRegistryOwner` and sets a
+ *   `ViewCompositionStrategy` so the Compose runtime is disposed correctly.
+ */
 package com.okmoto.calamari.overlay
 
 import android.content.Context

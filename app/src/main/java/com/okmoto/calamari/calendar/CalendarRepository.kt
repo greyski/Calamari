@@ -1,3 +1,11 @@
+/**
+ * Repository wrapper for calendar integration (Calamari-created events).
+ *
+ * Methodology:
+ * - Owns inserts into `CalendarContract.Events`.
+ * - Maintains an in-memory cache (`createdEvents`) of events created through this repo
+ *   so the Home screen can display them without re-querying the system calendar.
+ */
 package com.okmoto.calamari.calendar
 
 import android.content.ContentValues

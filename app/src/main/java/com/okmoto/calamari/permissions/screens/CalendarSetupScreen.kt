@@ -1,3 +1,10 @@
+/**
+ * Calendar setup screen shown when Calamari can't find a writable calendar.
+ *
+ * Methodology:
+ * - Presents user guidance and a primary action that opens system settings.
+ * - The “Skip for now” action returns control to the caller so Home navigation can continue.
+ */
 package com.okmoto.calamari.permissions.screens
 
 import android.content.Context

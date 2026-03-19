@@ -1,3 +1,13 @@
+/**
+ * Audio session repository backed by Picovoice (hotword + intent engine).
+ *
+ * Methodology:
+ * - Owns the lifecycle of [CalamariAudioEngine] and prevents duplicate initialization.
+ * - Dispatches listener callbacks onto the main thread so services/UI state updates can
+ *   happen without extra threading coordination.
+ * - Exposes a small interface ([AudioSessionManager]) so the overlay service can treat
+ *   audio processing as a black box.
+ */
 package com.okmoto.calamari.audio
 
 import android.content.Context

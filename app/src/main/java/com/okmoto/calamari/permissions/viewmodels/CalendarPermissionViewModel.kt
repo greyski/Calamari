@@ -1,3 +1,6 @@
+/**
+ * ViewModel providing UI copy for the calendar permission request screen.
+ */
 package com.okmoto.calamari.permissions.viewmodels
 
 import androidx.lifecycle.ViewModel

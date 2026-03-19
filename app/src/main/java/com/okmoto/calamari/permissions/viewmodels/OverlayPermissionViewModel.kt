@@ -1,3 +1,10 @@
+/**
+ * ViewModel providing UI copy and system intent wiring for overlay permission.
+ *
+ * Methodology:
+ * - Generates an intent pointing to the system overlay permission page for this app.
+ * - Keeps screen composables free from intent construction details.
+ */
 package com.okmoto.calamari.permissions.viewmodels
 
 import android.content.Intent

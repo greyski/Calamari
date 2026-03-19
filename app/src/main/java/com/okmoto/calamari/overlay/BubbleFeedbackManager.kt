@@ -1,3 +1,12 @@
+/**
+ * Haptic feedback provider for the overlay bubble.
+ *
+ * Methodology:
+ * - Centralizes vibration UX (and optionally sound in the future) behind the
+ *   [BubbleFeedbackPlayer] interface.
+ * - Keeps `MainBubbleService` focused on state transitions, delegating
+ *   feedback concerns to this component.
+ */
 package com.okmoto.calamari.overlay
 
 import android.content.Context

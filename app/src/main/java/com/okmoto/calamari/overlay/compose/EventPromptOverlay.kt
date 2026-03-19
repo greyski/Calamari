@@ -1,3 +1,16 @@
+/**
+ * Overlay prompt UI for creating calendar events.
+ *
+ * The overlay is shown by `MainBubbleService` after it parses an intent and computes
+ * start/end timing. Users progress through:
+ * - adding a title,
+ * - (optionally) retrying,
+ * - or letting the idle timer dismiss the prompt.
+ *
+ * Methodology:
+ * - Visual idle progress is driven by the `PromptUiState.idleTimer` duration.
+ * - Interaction handlers are delegated back to the service through lambdas.
+ */
 package com.okmoto.calamari.overlay.compose
 
 import androidx.compose.animation.core.Animatable

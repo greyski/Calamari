@@ -1,3 +1,11 @@
+/**
+ * Implementation of the on-device audio pipeline using Picovoice.
+ *
+ * Methodology:
+ * - Captures microphone audio on a background coroutine.
+ * - Optionally runs hotword detection before streaming frames to intent inference.
+ * - Reports results through [CalamariAudioListener] callbacks.
+ */
 package com.okmoto.calamari.audio
 
 import ai.picovoice.porcupine.Porcupine

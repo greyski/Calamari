@@ -1,3 +1,12 @@
+/**
+ * Navigation route constants and permission->route mapping helpers.
+ *
+ * Methodology:
+ * - Keeps all routes in one place so `MainActivity` can deterministically route users
+ *   based on the first missing permission.
+ * - Implements `routeForPermission()` as a single source of truth for mapping
+ *   [com.okmoto.calamari.core.CalamariPermission] to the corresponding destination.
+ */
 package com.okmoto.calamari.navigation
 
 import com.okmoto.calamari.core.CalamariPermission

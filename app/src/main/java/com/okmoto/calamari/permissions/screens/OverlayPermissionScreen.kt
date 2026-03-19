@@ -1,3 +1,11 @@
+/**
+ * Compose screen for ensuring overlay (“display over other apps”) permission.
+ *
+ * Methodology:
+ * - Checks `Settings.canDrawOverlays(...)` and immediately advances if already granted.
+ * - Otherwise shows a scaffold that opens the system overlay settings via
+ *   [com.okmoto.calamari.permissions.viewmodels.OverlayPermissionViewModel].
+ */
 package com.okmoto.calamari.permissions.screens
 
 import android.content.Context

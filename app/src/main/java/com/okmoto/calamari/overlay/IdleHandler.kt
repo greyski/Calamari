@@ -1,3 +1,11 @@
+/**
+ * Idle/timer scheduling helper for overlay timeouts.
+ *
+ * Methodology:
+ * - Wraps a single main-thread `Handler` runnable slot.
+ * - Ensures timeout transitions are cancellable and only the latest idle
+ *   callback can fire.
+ */
 package com.okmoto.calamari.overlay
 
 import android.os.Handler

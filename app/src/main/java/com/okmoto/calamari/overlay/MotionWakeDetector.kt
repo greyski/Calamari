@@ -1,3 +1,11 @@
+/**
+ * Motion-based wake detector for the overlay bubble.
+ *
+ * Methodology:
+ * - Observes accelerometer/position deltas to detect meaningful device motion.
+ * - Invokes a callback (typically to transition overlay `IDLE -> AWAKE`)
+ *   only when motion thresholds are exceeded.
+ */
 package com.okmoto.calamari.overlay
 
 import android.content.Context

@@ -1,3 +1,11 @@
+/**
+ * Hilt dependency bindings for the Calamari app.
+ *
+ * Methodology:
+ * - Declares interfaces -> implementations for audio/session, overlay feedback,
+ *   calendar/event repository plumbing, and motion detection.
+ * - Centralizes wiring so composables/services can remain implementation-agnostic.
+ */
 package com.okmoto.calamari.di
 
 import com.okmoto.calamari.audio.AudioSessionManager

@@ -1,3 +1,10 @@
+/**
+ * Repository tracking whether `MainActivity` is currently resumed.
+ *
+ * Methodology:
+ * - Allows overlay Compose UI to adapt behavior when the foreground activity is visible.
+ * - Uses a `StateFlow<Boolean>` so both services and Compose can observe it.
+ */
 package com.okmoto.calamari.overlay
 
 import kotlinx.coroutines.flow.MutableStateFlow

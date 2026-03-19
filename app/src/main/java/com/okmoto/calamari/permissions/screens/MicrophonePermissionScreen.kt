@@ -1,3 +1,11 @@
+/**
+ * Compose screen for requesting microphone permission.
+ *
+ * Methodology:
+ * - Uses a launcher (`ActivityResultContracts.RequestPermission`) to request `RECORD_AUDIO`.
+ * - Reads UI copy from [com.okmoto.calamari.permissions.viewmodels.MicrophonePermissionViewModel].
+ * - Calls `onPermissionSatisfied()` only when the permission is granted.
+ */
 package com.okmoto.calamari.permissions.screens
 
 import android.Manifest

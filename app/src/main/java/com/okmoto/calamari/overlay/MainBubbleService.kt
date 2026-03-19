@@ -1,3 +1,17 @@
+/**
+ * Floating overlay bubble service.
+ *
+ * Methodology:
+ * - Owns the always-on overlay UI (bubble + event prompt) via Compose views attached to
+ *   `WindowManager`.
+ * - Converts voice intents into calendar event timing (via `CalendarUtil`) and guides the user
+ *   through title capture and submission.
+ * - Implements a small state machine driven by [ListeningState], with timeout transitions
+ *   centralized in [IdleHandler].
+ *
+ * This service also injects [CalendarRepository] so event submission updates the in-memory
+ * cache used by the Home screen.
+ */
 package com.okmoto.calamari.overlay
 
 import android.annotation.SuppressLint

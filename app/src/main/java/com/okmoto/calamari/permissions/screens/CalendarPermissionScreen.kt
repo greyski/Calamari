@@ -1,3 +1,11 @@
+/**
+ * Compose screen for requesting calendar read/write permissions.
+ *
+ * Methodology:
+ * - Uses `RequestMultiplePermissions` to request `READ_CALENDAR` and `WRITE_CALENDAR`.
+ * - Advances only when both permissions are granted.
+ * - Reads title/description copy from [com.okmoto.calamari.permissions.viewmodels.CalendarPermissionViewModel].
+ */
 package com.okmoto.calamari.permissions.screens
 
 import android.Manifest

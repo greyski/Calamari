@@ -1,3 +1,12 @@
+/**
+ * Main application activity.
+ *
+ * Responsibilities:
+ * - Owns the navigation graph (Splash -> permission screens -> Home).
+ * - Drives the overlay service start/stop based on required permissions.
+ * - Wires the cached calendar event list from [com.okmoto.calamari.calendar.CalendarRepository]
+ *   into [com.okmoto.calamari.home.HomeScreen] for the events bottom sheet.
+ */
 package com.okmoto.calamari
 
 import android.content.Intent

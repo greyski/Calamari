@@ -1,3 +1,10 @@
+/**
+ * Simple splash screen shown while routing decides what the first screen is.
+ *
+ * Methodology:
+ * - Uses `LaunchedEffect(Unit)` to invoke `onReady()` immediately.
+ * - Displays only the app launcher icon centered on the screen.
+ */
 package com.okmoto.calamari.permissions.screens
 
 import android.widget.ImageView

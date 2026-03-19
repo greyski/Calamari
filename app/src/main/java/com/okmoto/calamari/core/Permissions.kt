@@ -1,3 +1,12 @@
+/**
+ * Permission model and helper functions for Calamari.
+ *
+ * Methodology:
+ * - Encapsulates the mapping between Calamari needs (overlay, audio, calendar) and
+ *   Android permission strings.
+ * - Provides utilities to decide whether each permission is required on this device
+ *   and whether it is already granted.
+ */
 package com.okmoto.calamari.core
 
 import android.Manifest

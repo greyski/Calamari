@@ -1,3 +1,12 @@
+/**
+ * Calendar utilities for translating Calamari voice intents into concrete event timing.
+ *
+ * Methodology:
+ * - Converts a parsed [com.okmoto.calamari.audio.CalamariIntent] into `(startMillis, endMillis, allDay)`
+ *   in the device local timezone.
+ * - Includes safety logic to avoid creating events in the past when AM/PM is ambiguous.
+ * - Provides formatting helpers for the overlay prompt and Home display.
+ */
 package com.okmoto.calamari.calendar
 
 import com.okmoto.calamari.audio.CalamariIntent

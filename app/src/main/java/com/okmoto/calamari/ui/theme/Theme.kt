@@ -1,3 +1,10 @@
+/**
+ * Compose theme wrapper for Calamari.
+ *
+ * Methodology:
+ * - Uses Material3 color schemes with optional dynamic colors on supported Android versions.
+ * - Centralizes typography via the shared [Typography] object.
+ */
 package com.okmoto.calamari.ui.theme
 
 import android.os.Build

@@ -1,3 +1,10 @@
+/**
+ * Color constants for Calamari's theme.
+ *
+ * Methodology:
+ * - Provides a stable palette (used by [Theme.kt]) that remains consistent even when
+ *   dynamic colors are unavailable.
+ */
 package com.okmoto.calamari.ui.theme
 
 import androidx.compose.ui.graphics.Color

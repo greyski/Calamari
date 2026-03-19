@@ -1,3 +1,10 @@
+/**
+ * Convenience interface for Android `RecognitionListener` usage.
+ *
+ * Methodology:
+ * - Provides no-op defaults for callback methods so implementations can focus
+ *   only on the handful of events they care about.
+ */
 package com.okmoto.calamari.overlay
 
 import android.os.Bundle

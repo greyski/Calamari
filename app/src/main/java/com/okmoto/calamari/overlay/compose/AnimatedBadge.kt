@@ -1,3 +1,11 @@
+/**
+ * Animated badge UI that reflects the current overlay [com.okmoto.calamari.overlay.ListeningState].
+ *
+ * Methodology:
+ * - Maps each listening state to a dedicated animation spec.
+ * - Keeps animation selection logic local so the surrounding Compose bubble
+ *   stays a thin layout wrapper.
+ */
 package com.okmoto.calamari.overlay.compose
 
 import androidx.annotation.FloatRange

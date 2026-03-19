@@ -1,3 +1,11 @@
+/**
+ * Overlay feedback controller for transient UI pills (success/error/info).
+ *
+ * Methodology:
+ * - Owns a `ComposeView` attached to `WindowManager` for the pill.
+ * - Uses the shared [IdleHandler] to auto-dismiss after a configurable duration.
+ * - Lazily builds the Compose content based on an in-memory `OverlayFeedbackUiState`.
+ */
 package com.okmoto.calamari.overlay
 
 import android.content.Context

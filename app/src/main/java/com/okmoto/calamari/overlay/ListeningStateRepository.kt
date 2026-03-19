@@ -1,3 +1,11 @@
+/**
+ * In-memory store for the current overlay [ListeningState].
+ *
+ * Methodology:
+ * - Backed by a `MutableStateFlow` so services and Compose UIs can observe changes.
+ * - `setState(...)` returns whether the state actually changed, allowing callers
+ *   to avoid redundant work.
+ */
 package com.okmoto.calamari.overlay
 
 import kotlinx.coroutines.flow.MutableStateFlow

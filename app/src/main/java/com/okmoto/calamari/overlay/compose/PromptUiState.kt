@@ -1,3 +1,11 @@
+/**
+ * Immutable UI model for the event prompt overlay.
+ *
+ * Methodology:
+ * - Encapsulates all text/visual state needed by `EventPromptOverlay` in one data object.
+ * - Keeps the idle timeout as data (`IdleTimer`) so Compose can render progress deterministically
+ *   while the service controls the actual timer scheduling/cancellation.
+ */
 package com.okmoto.calamari.overlay.compose
 
 import androidx.annotation.ColorRes

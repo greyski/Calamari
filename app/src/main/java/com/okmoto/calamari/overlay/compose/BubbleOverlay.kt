@@ -1,3 +1,11 @@
+/**
+ * Main overlay bubble Compose UI.
+ *
+ * Methodology:
+ * - Renders visual state for the overlay, including idle/awake animations and badge.
+ * - Takes `mainActivityResumed` into account so the overlay can react when the user
+ *   returns to the foreground activity.
+ */
 package com.okmoto.calamari.overlay.compose
 
 import androidx.compose.foundation.layout.Arrangement

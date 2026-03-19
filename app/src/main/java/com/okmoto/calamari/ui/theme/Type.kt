@@ -1,3 +1,9 @@
+/**
+ * Material typography definitions for Calamari.
+ *
+ * Note: This file intentionally defines only a small starter set of styles, allowing future
+ * refinements as the UI grows without forcing wide-reaching typography churn.
+ */
 package com.okmoto.calamari.ui.theme
 
 import androidx.compose.material3.Typography

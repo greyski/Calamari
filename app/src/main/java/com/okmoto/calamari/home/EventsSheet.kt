@@ -1,3 +1,12 @@
+/**
+ * Bottom sheet UI that lists calendar events created by Calamari.
+ *
+ * Methodology:
+ * - Events are rendered in a `LazyColumn`, ordered by `createdAtMillis` (most recent first).
+ * - Clicking an event follows the 24-hour rule:
+ *   - <24h old: open the default calendar view (no event deep link).
+ *   - >=24h old: open the specific event using `CalendarContract.Events` + `eventId`.
+ */
 package com.okmoto.calamari.home
 
 import android.content.ActivityNotFoundException

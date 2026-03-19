@@ -1,3 +1,11 @@
+/**
+ * Compose UI for the floating overlay feedback pill.
+ *
+ * This is purely presentational:
+ * - Renders an icon + single-line message.
+ * - The auto-dismiss lifecycle is orchestrated by `BubbleOverlayFeedbackManager`
+ *   (this file does not start timers itself; it just shows what it's given).
+ */
 package com.okmoto.calamari.overlay.compose
 
 import androidx.annotation.ColorRes

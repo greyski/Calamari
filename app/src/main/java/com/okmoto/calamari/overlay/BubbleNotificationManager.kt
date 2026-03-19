@@ -1,3 +1,11 @@
+/**
+ * Foreground notification helper for the overlay service.
+ *
+ * Methodology:
+ * - Encapsulates notification channel creation (API 26+) and ID/channel constants.
+ * - Builds notification text based on [ListeningState] updates so the service can
+ *   remain purely behavioral.
+ */
 package com.okmoto.calamari.overlay
 
 import android.app.Notification

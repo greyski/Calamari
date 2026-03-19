@@ -1,3 +1,12 @@
+/**
+ * Compose screen for requesting notification permission (Android 13+).
+ *
+ * Methodology:
+ * - Uses `hiltViewModel()` to source the title/description copy.
+ * - Uses `rememberLauncherForActivityResult` with `RequestPermission` to request
+ *   `POST_NOTIFICATIONS`.
+ * - If the permission is not applicable (API < TIRAMISU), it immediately advances.
+ */
 package com.okmoto.calamari.permissions.screens
 
 import android.Manifest

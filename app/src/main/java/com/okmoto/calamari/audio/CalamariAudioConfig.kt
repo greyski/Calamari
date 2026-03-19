@@ -1,3 +1,9 @@
+/**
+ * Audio configuration types for the on-device Calamari speech pipeline.
+ *
+ * This file is a lightweight container for keyword/model paths and sensitivities so the
+ * underlying engine can be configured without hard-coding those values in runtime logic.
+ */
 package com.okmoto.calamari.audio
 
 /**

@@ -1,3 +1,11 @@
+/**
+ * Data models for Calamari on-device audio parsing.
+ *
+ * Methodology:
+ * - Defines the structured intent model ([CalamariIntent]) produced from Rhino/Rhino slots.
+ * - Defines time-related enums/value objects so the overlay/service can reliably convert
+ *   parsed speech into calendar event timing.
+ */
 package com.okmoto.calamari.audio
 
 /**
