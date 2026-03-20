@@ -23,29 +23,31 @@ Calamari is a voice-driven Android companion that runs an always-on floating “
 
 The flow below is organized to mirror the typical user journey through the app.
 
+Demo video: [View `.webm` recording](docs/Screen_recording_20260319_235724.webm)
+
 1) Idle / wake-word ready:
 
-![Listen for Calamari](docs/screenshots/listenforcalamari.png)
+<img src="docs/screenshots/listenforcalamari.png" alt="Listen for Calamari" width="320" />
 
 2) Listening for event details:
 
-![Listen for event](docs/screenshots/listenforevent.png)
+<img src="docs/screenshots/listenforevent.png" alt="Listen for event" width="320" />
 
 3) Parsed date/intent confirmation (prompt context before title capture):
 
-![Confirm date heard](docs/screenshots/confirmdateheard.png)
+<img src="docs/screenshots/confirmdateheard.png" alt="Confirm date heard" width="320" />
 
 4) Listening for event title:
 
-![Listen for event name](docs/screenshots/listenforeventname.png)
+<img src="docs/screenshots/listenforeventname.png" alt="Listen for event name" width="320" />
 
 5) Ready to submit:
 
-![Submit event](docs/screenshots/submitevent.png)
+<img src="docs/screenshots/submitevent.png" alt="Submit event" width="320" />
 
 6) Submission while overlay is above other apps:
 
-![Submit event over OS](docs/screenshots/submiteventoverOS.png)
+<img src="docs/screenshots/submiteventoverOS.png" alt="Submit event over OS" width="320" />
 
 ## How it works (high level)
 
