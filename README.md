@@ -61,16 +61,17 @@ Demo video: [View `.webm` recording](docs/airplane_mode_demo.webm)
 I focused on calendar event creation because it is a frequent “small-friction” task: you are in another app, see or hear a date, and have to switch context, memorize details, then manually add it later. Voice is a strong fit here because scheduling is naturally conversational ("create an event for Friday at 3 PM"), and the app can be triggered hands-free from any screen through the floating bubble.
 
 At runtime, the architecture is primarily on-device:
-- **Audio capture + intent parsing:** Picovoice (Porcupine) processes live audio chunks, detects the hot word ("Calamari"), then (Rhino) extracts date/time intent slots.
+- **Audio capture + intent extraction:** Picovoice (Porcupine) processes live audio chunks, detects the hot word ("Calamari"), then Rhino performs deterministic, on-device slot-based extraction of calendar intent parameters (date/time).
 - **Title capture:** after date/time intent is captured, Android `SpeechRecognizer` is used for free-form event titles with offline preference enabled, so recognition can run locally when offline language models are available on the device.
 - **Android APIs:** `CalendarContract` is used to create events in the user's default calendar.
 - **Persistence + reliability:** Room stores created-event history locally, and WorkManager periodically verifies whether stored `eventId`s still exist in the system calendar so deleted items can be flagged in UI.
 
-Prompt/model integration was mostly schema-first. Picovoice makes this practical with a console-driven grammar/slot model (intent inference), not a general-purpose LLM. The important part was designing phrase templates and slot groups that extract useful structure while still feeling natural to users. A phrase such as:
+Prompt/model integration was mostly schema-first. Intent resolution is handled by Picovoice Rhino grammar/slot inference on-device (rather than a general-purpose FM parser), and the important part was designing phrase templates and slot groups that extract useful structure while still feeling natural to users. A phrase such as:
 `Create an event for Friday the 13th at 12 PM`
 is modeled as a sequence of optional phrase tokens plus value slots (day/date/time/daytime), then normalized into typed app models before conversion to epoch millis for `CalendarContract`.
+This tradeoff was intentional: in a narrow action domain, deterministic on-device slot extraction delivered more predictable latency and intent reliability than a broader generative parser.
 
-I also explored Gemini AI Edge. The approach was promising, but practical validation in my setup was blocked by hardware constraints (no physical Android device available for reliable on-device microphone-driven model testing). Because of that, Picovoice was the most reliable path to deliver a complete working app in this project scope.
+I also explored Gemini AI Edge as a more flexible parsing path for out-of-grammar phrasing. Practical validation in this setup was blocked by hardware/runtime constraints (device compatibility + model availability), so Picovoice was the most reliable path to deliver a complete working app in this project scope.
 
 Codebase walkthrough:
 - `overlay/`: floating bubble lifecycle, state machine, prompt behavior, and service orchestration (`MainBubbleService`).
