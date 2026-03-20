@@ -54,9 +54,33 @@ The flow below is organized to mirror the typical user journey through the app.
 3. When the user submits, events are inserted into the system calendar provider.
 4. The repository persists a bounded history of Calamari-created events in a local Room database, which powers the Home bottom sheet.
 
-## Notes
+## Notes & Thoughts
 
-Persisted event history is pruned to the most recent `250` Calamari-created rows (drop-oldest).
+I focused on calendar event creation because it is a frequent “small-friction” task: you are in another app, see or hear a date, and have to switch context, memorize details, then manually add it later. Voice is a strong fit here because scheduling is naturally conversational ("create an event for Friday at 3 PM"), and the app can be triggered hands-free from any screen through the floating bubble.
 
-A background verifier periodically checks stored `eventId`s against `CalendarContract.Events` and flags events that have been deleted from the system calendar. Flagged events show as **Deleted** in the Home bottom sheet and tapping them is disabled.
+At runtime, the architecture is primarily on-device:
+- **Audio capture + intent parsing:** Picovoice (Porcupine) processes live audio chunks, detects the hot word ("Calamari"), then (Rhino) extracts date/time intent slots.
+- **Title capture:** after date/time intent is captured, Android `SpeechRecognizer` is used for free-form event titles (highly variable language that is easier to capture separately). Depending on device/service configuration, this step may technically use network-backed recognition.
+- **Android APIs:** `CalendarContract` is used to create events in the user's default calendar.
+- **Persistence + reliability:** Room stores created-event history locally, and WorkManager periodically verifies whether stored `eventId`s still exist in the system calendar so deleted items can be flagged in UI.
+
+Prompt/model integration was mostly schema-first. Picovoice makes this practical with a console-driven grammar/slot model (intent inference), not a general-purpose LLM. The important part was designing phrase templates and slot groups that extract useful structure while still feeling natural to users. A phrase such as:
+`Create an event for Friday the 13th at 12 PM`
+is modeled as a sequence of optional phrase tokens plus value slots (day/date/time/daytime), then normalized into typed app models before conversion to epoch millis for `CalendarContract`.
+
+I also explored Gemini AI Edge. The approach was promising, but practical validation in my setup was blocked by hardware constraints (no physical Android device available for reliable on-device microphone-driven model testing). Because of that, Picovoice was the most reliable path to deliver a complete working app in this project scope.
+
+Codebase walkthrough:
+- `overlay/`: floating bubble lifecycle, state machine, prompt behavior, and service orchestration (`MainBubbleService`).
+- `audio/`: speech pipeline and intent modeling (`CalamariAudioEngine`, `CalamariIntent` models).
+- `calendar/`: date/time conversion utilities, calendar writes, Room history storage, and verification worker.
+- `activity/home/`: Home UI and event history bottom sheet (`HomeScreen`, `EventsSheet`, `HomeViewModel`, `SplashScreen`).
+- `activity/permissions/`: permission policy, onboarding screens, and permission-specific viewmodels.
+- `activity/navigation/`: route definitions and permission->route mapping.
+- `activity/theme/`: Compose theme/color/typography definitions used by activity-layer UI.
+- `activity/MainActivity`: top-level navigation host and app-level screen flow.
+- `di/`: Hilt modules and dependency wiring.
+- `CalamariApp`: application entrypoint and global app configuration.
+
+If I continued this project, I would further unify calendar/date utility logic and tighten package boundaries for repositories/helpers, but the current structure is still approachable for a small app.
 

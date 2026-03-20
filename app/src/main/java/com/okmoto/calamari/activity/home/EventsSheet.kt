@@ -52,7 +52,7 @@ fun EventsSheet(
     ) {
         Text(
             text = "Your events",
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(start = 8.dp),
         )
 
@@ -125,14 +125,22 @@ private fun Context.openCalendarForCreatedEvent(event: CreatedCalamariCalendarEv
     val twentyFourHoursMillis = 24L * 60L * 60L * 1000L
     val eventAgeMillis = System.currentTimeMillis() - event.createdAtMillis
     val shouldOpenByEventId = eventAgeMillis >= twentyFourHoursMillis
+    val nowMillis = System.currentTimeMillis()
 
     val intent = if (shouldOpenByEventId) {
         Intent(Intent.ACTION_VIEW).apply {
             data = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.eventId)
+            putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, event.event.startMillis)
+            putExtra(CalendarContract.EXTRA_EVENT_END_TIME, event.event.endMillis)
         }
     } else {
         Intent(Intent.ACTION_VIEW).apply {
+            // Open the calendar app at "now" to avoid generic ACTION_VIEW handlers.
             data = CalendarContract.CONTENT_URI
+                .buildUpon()
+                .appendPath("time")
+                .appendPath(nowMillis.toString())
+                .build()
         }
     }
 

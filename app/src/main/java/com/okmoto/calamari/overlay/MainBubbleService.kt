@@ -30,7 +30,6 @@ import android.view.WindowManager
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.okmoto.calamari.MainActivity
 import com.okmoto.calamari.audio.AudioSessionManager
 import com.okmoto.calamari.audio.CalamariAudioListener
@@ -307,6 +306,7 @@ class MainBubbleService : Service(), SimpleSpeechListener {
                     packageName
                 )
                 putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS,true)
+                putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
             }
         )
     }

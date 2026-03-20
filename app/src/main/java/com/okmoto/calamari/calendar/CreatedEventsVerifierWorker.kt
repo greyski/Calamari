@@ -8,20 +8,23 @@ package com.okmoto.calamari.calendar
 
 import android.content.Context
 import android.provider.CalendarContract
-import androidx.hilt.work.HiltWorker
+import androidx.room.Room
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-@HiltWorker
-class CreatedEventsVerifierWorker @AssistedInject constructor(
-    @Assisted appContext: Context,
-    @Assisted workerParams: WorkerParameters,
-    private val createdEventsDao: CreatedCalamariEventsDao,
+class CreatedEventsVerifierWorker(
+    appContext: Context,
+    workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
+    private val createdEventsDao: CreatedCalamariEventsDao by lazy {
+        Room.databaseBuilder(
+            applicationContext,
+            CalamariEventsDatabase::class.java,
+            "calamari_events.db",
+        ).build().createdCalamariEventsDao()
+    }
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val eventIds = createdEventsDao.getAllEventIds()
