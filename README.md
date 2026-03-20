@@ -60,7 +60,7 @@ I focused on calendar event creation because it is a frequent â€œsmall-frictionâ
 
 At runtime, the architecture is primarily on-device:
 - **Audio capture + intent parsing:** Picovoice (Porcupine) processes live audio chunks, detects the hot word ("Calamari"), then (Rhino) extracts date/time intent slots.
-- **Title capture:** after date/time intent is captured, Android `SpeechRecognizer` is used for free-form event titles (highly variable language that is easier to capture separately). Depending on device/service configuration, this step may technically use network-backed recognition.
+- **Title capture:** after date/time intent is captured, Android `SpeechRecognizer` is used for free-form event titles with offline preference enabled, so recognition can run locally when offline language models are available on the device.
 - **Android APIs:** `CalendarContract` is used to create events in the user's default calendar.
 - **Persistence + reliability:** Room stores created-event history locally, and WorkManager periodically verifies whether stored `eventId`s still exist in the system calendar so deleted items can be flagged in UI.
 
@@ -82,5 +82,5 @@ Codebase walkthrough:
 - `di/`: Hilt modules and dependency wiring.
 - `CalamariApp`: application entrypoint and global app configuration.
 
-If I continued this project, I would further unify calendar/date utility logic and tighten package boundaries for repositories/helpers, but the current structure is still approachable for a small app.
+If I continued this project, I'd unify calendar/date utility logic, tighten package boundaries between repositories and helpers, and add on-device validation scripts backed by a small device farm to verify real microphone-driven input/output behavior. The current structure remains approachable for a small app.
 
