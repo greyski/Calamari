@@ -23,7 +23,7 @@ Calamari is a voice-driven Android companion that runs an always-on floating “
 
 The flow below is organized to mirror the typical user journey through the app.
 
-Demo video: [View `.webm` recording](docs/airplane_mode_demo.webm)
+Demo video: [View recording](docs/airplane_mode_demo.webm)
 
 1) Idle / wake-word ready:
 
