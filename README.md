@@ -21,11 +21,31 @@ Calamari is a voice-driven Android companion that runs an always-on floating “
 
 ## Screenshots
 
-There are currently no screenshot assets committed to this repository. Add images under `docs/screenshots/` and update the links below.
+The flow below is organized to mirror the typical user journey through the app.
 
-- `docs/screenshots/home_events_bottom_sheet.png` (Home screen calendar button + bottom sheet)
-- `docs/screenshots/overlay_bubble.png` (floating bubble overlay)
-- `docs/screenshots/event_prompt.png` (event prompt UI when Calamari parses an intent)
+1) Idle / wake-word ready:
+
+![Listen for Calamari](docs/screenshots/listenforcalamari.png)
+
+2) Listening for event details:
+
+![Listen for event](docs/screenshots/listenforevent.png)
+
+3) Parsed date/intent confirmation (prompt context before title capture):
+
+![Confirm date heard](docs/screenshots/confirmdateheard.png)
+
+4) Listening for event title:
+
+![Listen for event name](docs/screenshots/listenforeventname.png)
+
+5) Ready to submit:
+
+![Submit event](docs/screenshots/submitevent.png)
+
+6) Submission while overlay is above other apps:
+
+![Submit event over OS](docs/screenshots/submiteventoverOS.png)
 
 ## How it works (high level)
 
@@ -33,14 +53,6 @@ There are currently no screenshot assets committed to this repository. Add image
 2. Calendar event timing is computed and an event prompt is shown for title capture.
 3. When the user submits, events are inserted into the system calendar provider.
 4. The repository persists a bounded history of Calamari-created events in a local Room database, which powers the Home bottom sheet.
-
-## Development
-
-Build/test:
-
-```bash
-./gradlew :app:testDebugUnitTest
-```
 
 ## Notes
 
